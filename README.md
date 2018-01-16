@@ -18,7 +18,7 @@ base is a node-based blockchain and transaction processor. This implementation p
 
 1. Download this package as a ZIP using the green 'Clone or download' button above
 
-2. Make sure you have NodeJS and NPM installed
+2. Make sure you have [Node and NPM](https://nodejs.org/en/) installed
 
 3. Unzip the downloaded package and then from the command line, navigate to the unzipped location
 
