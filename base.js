@@ -1,7 +1,7 @@
 
 'use strict';
 
-var version = '0.0.5';
+var version = '0.0.6';
 
 console.log("base v" + version);
 console.log("official site: basechain.io ");
