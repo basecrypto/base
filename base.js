@@ -22,6 +22,8 @@ var pg = require('pg');
 
 var coinbase_pk = '040c7d8349881aaef92609adb2a5c16ec52a820ae67329fb2f892835a1e40b6dad34871afcd7138dd467e46acef725409f0e68e48a55edc10410e68a264f0a2752';
 var genesis_coinbase_hash = CryptoJS.SHA256(coinbase_pk).toString();
+console.log('genesis_coinbase_hash ' + genesis_coinbase_hash);
+
 
 var http_port = process.env.HTTP_PORT || 3001;
 var p2p_port = process.env.PORT || 6001;
@@ -419,8 +421,7 @@ var generateNextBlock = (transactions, miner_pk, max_time_s) => {
     }
     else {
         difficulty = [1, 0xf];
-    }
-    console.log('debug2 ' + difficulty);
+    }    
     while (!isValidHashDifficulty(nextHash, difficulty)) {
         now = getTimestamp();
         if ((now - t) > max_time_s) {
@@ -556,8 +557,7 @@ var addTransaction = (newTransaction) => {
     }
 };
 
-var isValidNewBlock = (somechain, newBlock, previousBlock, prevBlock2) => {
-    console.log('debug1 ' + difficulty);
+var isValidNewBlock = (somechain, newBlock, previousBlock, prevBlock2) => {    
     var difficulty =  [1, 0xf];
     if (prevBlock2) {
         difficulty = getDifficulty(somechain, previousBlock, prevBlock2);
@@ -740,20 +740,12 @@ var replaceChain = (newBlocks) => {
 var isValidChain = (blockchainToValidate) => {
     //verify genesis block
     if (JSON.stringify(blockchainToValidate[0]) !== JSON.stringify(getGenesisBlock())) {
-        console.log('isValidChain ret 1');
-        console.log('------------------');
-        console.log(JSON.stringify(blockchainToValidate[0]) );
-        console.log('------------------');
-        console.log(JSON.stringify(getGenesisBlock()));
-        console.log('------------------');
         return false;
     }
     //verify other blocks
     var tempBlocks = [blockchainToValidate[0]];
     for (var i = 1; i < blockchainToValidate.length; i++) {
-
         console.log('validating block ' + i + '...');
-
         var prev1 = tempBlocks[i - 1];    
         var prev2 = null;
         if (tempBlocks.length > 1) {
@@ -762,7 +754,6 @@ var isValidChain = (blockchainToValidate) => {
         if (isValidNewBlock(blockchainToValidate, blockchainToValidate[i], prev1, prev2)) {
             tempBlocks.push(blockchainToValidate[i]);
         } else {
-            console.log('isValidChain ret 2');
             return false;
         }
     }
