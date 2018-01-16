@@ -1,0 +1,487 @@
+<html>
+<head>
+    <title>basechain.io</title>
+    <script src="repeater.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"
+            integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+            crossorigin="anonymous"></script>
+    <link rel="stylesheet" type="text/css" href="index.css" />
+    <link href="https://fonts.googleapis.com/css?family=Quantico" rel="stylesheet">
+</head>
+<body>
+    <a class="menuitem" onclick="getBalance(); getTransactions(); getPeers(); " id="getBalance">Refresh</a>
+    <a class="menuitem" onclick="clearPanels();$('#makePaymentPanel').show()">Send</a>
+    <a class="menuitem" onclick="clearPanels();$('#receivePanel').show()">Receive</a>
+    <a class="menuitem" onclick="clearPanels();$('#minerPanel').show();">Miner</a>
+    <a class="menuitem" onclick="clearPanels();$('#keysPanel').show()">Keys</a>
+    <a class="menuitem" onclick="clearPanels();$('#transactionsPanel').show()">Transactions</a>
+    <a class="menuitem" onclick="clearPanels();$('#peersPanel').show();">Peers</a>
+
+    <script>
+        function clearPanels() {
+            $('#makePaymentPanel').hide();
+            $('#receivePanel').hide();
+            $('#transactionsPanel').hide();
+            $('#minerPanel').hide();
+            $('#peersPanel').hide();
+            $('#keysPanel').hide();
+        }
+    </script>
+
+    <h2>Balance</h2>
+    <img id="logo" src="logo.svg" style="width:80px;float:left" />
+    <div id="balance">not retrieved</div>
+    <br />
+
+    <div id="keysPanel" style="display:none">
+        <h2>Keys</h2>
+        <div id="keydump"></div>
+        <br /><br />
+        <button onclick="exportKeys()" id="exportKeys">Refresh keys</button>
+        <br /><br />
+    </div>
+
+    <div id="makePaymentPanel" style="display: none">
+        <h2>Send base</h2>
+        <div>Pay </div><input type="text" id="payAmount" placeholder="amount" />
+        <br /><br />
+        <div> to address hash </div><input type="text" id="payToAddressHash" value="" placeholder="destination address hash" />
+        <br /><br />
+        <div>Mining fee </div><input type="text" id="fee" placeholder="fee" value="0.0000001" />
+        <br /><br />
+        <button onclick="makePayment()" id="makePayment">Make Payment</button>
+    </div>
+
+    <div id="receivePanel" style="display: none">
+        <h2>Receive base</h2>
+        <button onclick="receiveBase()" id="receiveBase">Get a new wallet address</button>
+        <br />
+        <br />
+        <div id="receiveToAddressHash"></div>
+    </div>
+
+    <div id="transactionsPanel" style="display: none">
+        <h2>Transactions</h2>
+        <div id="transactions">
+            <div>hash: {hash}</div>
+            <div>timestamp:{timestamp}</div>
+            <div>inputs: {inputs}</div>
+            <div>outputs: {outputs}</div>
+            <div>signatures: {signatures}</div>
+        </div>
+        <br />
+        <br />
+        <button onclick="getTransactions()" id="refreshTransactions">Refresh transaction list</button>
+    </div>
+
+    <div id="minerPanel" style="display: none">
+        <h2>Miner</h2>
+        <div>
+            Mine for maximum
+        </div>
+        <input type="text" id="maxSeconds" value="20" placeholder="seconds" /> seconds before retry <br />
+        <br />
+        <div>pay reward to PK</div>
+        <input type="text" id="minerPK" value="" placeholder="base wallet address PK" />
+        <br /><br />
+        <button onclick="$('#mineBlockButton').hide();  mineBlock();  g_stop_mining = false; " id="mineBlockButton">Start mining</button> 
+        <button onclick="$('#mineBlockButton').show();  stopMining()" id="stopMiningButton" >Pause mining</button>
+        <br />
+        <br />
+        <div style="font-size:10px;" id="mined">not mining</div>
+        <br />
+        <div style="font-size:20px;" id="minedlog"></div>
+    </div>
+
+    <div id="peersPanel" style="display: none">
+        <h2>Peers</h2>
+        <input type="text" id="peerIP" value="ws://base-crypto.herokuapp.com" />
+        <button onclick="connect()" id="connect">Add Peer</button>
+        <h2>Connections</h2>
+        <div id="peers">
+            <div>
+                Connection to {i}
+            </div>
+        </div>
+        <br />
+        <br />
+        <button onclick="getPeers(); " id="refreshPeers">Refresh peers</button>
+    </div>
+
+    <script>
+        var keys = JSON.parse(localStorage.getItem('keys') || '[]');
+        var transactions = [];
+        var g_outputs = [];
+        var balance = 0; 
+        if (keys.length == 0) {
+            $.get("http://localhost:3001/newWallet", function (data) {
+                var desc = 'Miner';
+                var keypair = JSON.parse(data);
+                keypair.desc = desc;
+                keys.push(keypair);
+                localStorage.setItem('keys', JSON.stringify(keys));
+                $('#minerPK').val(keypair.pk);
+            });
+        }
+        else {
+            $('#minerPK').val(keys[0].pk);
+        }
+
+        var repeaterTransactions = new Repeater("transactions", []);
+        repeaterTransactions.render();
+
+        var repeaterPeers = new Repeater("peers", []);
+        repeaterPeers.render(Repeater.array);
+
+        /*
+        //call animation loop
+        window.requestAnimFrame = (function () {
+            return window.requestAnimationFrame ||
+                window.webkitRequestAnimationFrame ||
+                window.mozRequestAnimationFrame ||
+                function (callback) {
+                    window.setTimeout(callback, 33); //fallback
+                };
+        })();
+
+        //start the loop
+        (function animloop() {
+            requestAnimFrame(animloop);
+            theloop();
+        })();
+      
+
+        var tick = 0;
+        //loop
+        function theloop() {
+            tick++;
+            if (tick > 60 * 5) {
+                tick = 0;
+                console.log('update fields');
+                getTransactions();
+                getBalance();
+            }
+        }
+          */
+
+        function getTransactions() {
+            $.get("http://localhost:3001/transactions", function (data) {
+                var obj = JSON.parse(data);
+                transactions = obj;
+                repeaterTransactions.jsonarray = obj;
+                repeaterTransactions.render(Repeater.stringify);
+            });
+        }
+
+
+        getTransactions();
+        getBalance();
+        getPeers();
+        exportKeys();
+
+        function getPeers() {
+            $.get("http://localhost:3001/peers", function (data) {
+                //var obj = JSON.parse(data);
+                repeaterPeers.jsonarray = data;
+                repeaterPeers.render(Repeater.array);
+            });
+        }
+
+        function connect() {
+            var peerIP = $('#peerIP').val();
+            $.ajax({
+                method: "POST",
+                contentType: "application/json; charset=utf-8",
+                url: "http://localhost:3001/addPeer",
+                data: JSON.stringify({ "peer": peerIP }),
+                success: function (msg) {
+                    //connected                                       
+                    getPeers();
+
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    if (XMLHttpRequest.readyState == 4) {
+                        console.log('HTTP error ' + XMLHttpRequest.status);
+                    }
+                    else if (XMLHttpRequest.readyState == 0) {
+                        alert('Network error - is your local base node running?');
+                    }
+                    else {
+                        // something weird is happening
+                        alert('connect - Unknown error');
+                    }
+                }
+            });
+        }
+
+
+        function getBalance() {
+            //reset my global outputs
+            g_outputs = [];
+            var len = keys.length;
+            //for each key
+            for (var i = 0; i < len; i++) {
+                var pk = keys[i].pk;
+                //---------
+                $.ajax({
+                    method: "POST",
+                    contentType: "application/json; charset=utf-8",
+                    url: "http://localhost:3001/balance",
+                    data: JSON.stringify({ "pk": pk }),
+                    success: function (msg) {
+                        //add the returned outputs to the global list of outputs
+                        var outputs = JSON.parse(msg);
+                        //add the sk index to each output so we know which sk to use when spending
+                        outputs.forEach(function (op) {
+                            //the returned outputs are augmented with the fromPK.
+                            //get the key index for this fromPK from our local list of keys
+                            op.sk_index = getKeyIndex(op.fromPK);
+                        });
+                        var joined_outputs = g_outputs.concat(outputs);
+                        g_outputs = joined_outputs;
+                        //reset balance
+                        var temp_balance = 0;
+                        var len = g_outputs.length;
+                        for (var i = 0; i < len; i++) {
+                            var output = g_outputs[i];
+                            temp_balance = temp_balance + parseFloat(output.amount);
+                        }
+                        balance = temp_balance;
+                        $('#balance').text(balance.toFixed(8));
+                    },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+                        if (XMLHttpRequest.readyState == 4) {
+                            console.log('HTTP error ' + XMLHttpRequest.status);
+                        }
+                        else if (XMLHttpRequest.readyState == 0) {
+                            alert('Network error - is your local base node running?');
+                        }
+                        else {
+                            // something weird is happening
+                            alert('getBalance - Unknown error');
+                        }
+                    }
+                });
+                //---------
+            }
+        }
+
+        var g_stop_mining = false;
+
+        function stopMining() {
+            g_stop_mining = true;
+
+        }
+
+        function mineBlock() {
+            
+           // $('#mineBlockButton').hide();
+           // $('#stopMiningButton').show();
+            var miner_pk = document.getElementById('minerPK').value;
+            var max_time_s = document.getElementById('maxSeconds').value;
+            $('#mined').text('mining..');
+            $.ajax({
+                method: "POST",
+                contentType: "application/json; charset=utf-8",
+                url: "http://localhost:3001/mineBlock",
+                data: JSON.stringify({
+                    "minerPK": miner_pk,
+                    "maxSeconds": max_time_s
+                })
+            })
+                .done(function (msg) {
+                  //  $('#mineBlockButton').show();
+                   // $('#stopMiningButton').hide();
+                    console.log('mined = ' + msg);  
+                    var obj;
+                    try {
+                        obj = JSON.parse(msg);
+                    }
+                    catch (err) {
+                        //could not mine block
+                        console.log(err.toString());
+                        setTimeout('mineBlock();', 2000); 
+                        $('#mined').text('failed to mine');
+                        return;
+                    }
+                    //$('#minedlog').text(msg + '\n' + txt);                
+                    if (obj) {
+                        $('#mined').text('mined block ' + obj.index);
+                    }
+             
+                    getBalance();
+                    getTransactions();
+
+                    if (!g_stop_mining) {
+                        setTimeout('mineBlock();', 2000);                     
+                    }
+                    else {
+                        $('#mined').text('mining paused');
+                    }
+
+                });
+
+        }
+
+        function getKeyIndex(pk) {
+            var len = keys.length;
+            for (var i = 0; i < len; i++) {
+                var k = keys[i];
+                if (k.pk == pk) {
+                    return i;
+                }
+            }
+            alert('ERROR:Could not find key index');
+        }
+
+        function makePayment() {
+            //get the amount and address
+            var amount = parseFloat($('#payAmount').val()) || 0;
+            if (amount <= 0) {
+                alert('specify an amount to transfer. minimum is 0.00000001 base');
+                return false;
+            }
+            var address_hash = $('#payToAddressHash').val();
+            var fee = parseFloat($('#fee').val());
+            //clone outputs
+            var c_outputs = g_outputs.slice(0);
+            //sort unspent outputs in wallet, largest first
+            c_outputs.sort(function (a, b) {
+                return parseFloat(b.amount) - parseFloat(a.amount);
+            });
+            var sum_of_unspents = 0;
+            var inputs = [];
+            var secret_keys = [];
+            //collect enough unspent outputs to cover the cost
+            var len = c_outputs.length;
+            for (var i = 0; i < len; i++) {
+                var output = c_outputs[i];
+                sum_of_unspents = sum_of_unspents + parseFloat(output.amount);
+                //keep adding inputs to our transaction, from unspent ouputs.
+                inputs.push({
+                    "fromBlockIndex": output.fromBlockIndex,
+                    "fromTxHash": output.fromTxHash,
+                    "fromOutputIndex": output.fromOutputIndex,
+                    "fromPK": output.fromPK
+                });
+                //push secret key for this input so that POST /pay can sign it
+                secret_keys.push(keys[output.sk_index].sk);
+
+                if (sum_of_unspents >= (amount + fee)) {
+                    //enough inputs found to cover the cost.
+                    //(i+1) is now equal to the number of outputs required.
+                    break;
+                }
+            }
+            if (i == len) {
+                //insufficient funds
+                alert('You have insufficient funds or some funds are currently unavailable due to uncommitted transactions. Please wait for transactions to clear.');
+                return false;
+            }
+
+            if (fee < 0.00000001) {
+                alert('you must specify a fee of 0.00000001 or more.');
+                return false;
+            }
+            //outputs to be added to the new tx
+            var outputs = [];
+            var change = sum_of_unspents - (amount + fee);
+            //pay to:
+            outputs.push({
+                "toHash": address_hash,
+                "amount": amount.toFixed(8),
+            })
+            //pay the change back into the first PKH we own
+            //to do - might need to improve this, use a new address
+            if (change > 0) {
+                outputs.push({
+                    "toHash": c_outputs[0].toHash,
+                    "amount": change.toFixed(8),
+                });
+            }
+            var tx = {
+                "inputs": inputs,
+                "outputs": outputs,
+                "secret_keys": secret_keys
+            };
+            var data = JSON.stringify(tx);
+            console.log(data);
+            
+            //pay
+
+            $.ajax({
+                method: "POST",
+                contentType: "application/json; charset=utf-8",
+                url: "http://localhost:3001/pay",
+                data: data
+            })
+                .done(function (msg) {
+                    //payment made
+                    console.log('payment made');
+                    console.log('return msg: ' + msg);
+                    console.log('clean g_outpts');
+                    var len = inputs.length;
+                    loop1:
+                    //for each input we just spent
+                    for (var i = 0; i < len; i++) {
+                        var ip = inputs[i];
+                        //for each unspent ouput we own
+                        loop2:
+                        for (var j = 0; j < g_outputs.length; j++) {
+                            var g_op = g_outputs[j];
+                            if ((g_op.fromBlockIndex == ip.fromBlockIndex) &&
+                                (g_op.fromOutputIndex == ip.fromOutputIndex) &&
+                                (g_op.fromPK == ip.fromPK) &&
+                                (g_op.fromTxHash == ip.fromTxHash)
+                            ) {
+                                //found the g_output entry for this used input.
+                                //don't keep it.
+                                console.log('cleaning item');
+                                g_outputs.splice(j, 1);
+                                break loop2;
+                            }
+                        }
+                    }
+                    //clear amount field
+                    alert($('#payAmount').val() + ' base tokens transferred to ' + $('#payToAddressHash').val());
+                    $('#payAmount').val('');
+                    getTransactions();
+
+                });
+        }
+
+        function receiveBase() {
+            var desc = prompt("Who is this payment from?", "John Doe");
+            if (desc) {
+                $.get("http://localhost:3001/newWallet", function (data) {
+                    var keypair = JSON.parse(data);
+                    keypair.desc = desc;
+                    keys.push(keypair);
+                    localStorage.setItem('keys', JSON.stringify(keys));
+                    var wallet_desc = keypair.pk;
+                    $.ajax({
+                        method: "POST",
+                        contentType: "application/json; charset=utf-8",
+                        url: "http://localhost:3001/hash",
+                        data: JSON.stringify({ "pk": keypair.pk }),
+                        success: function (msg) {
+                            document.getElementById("receiveToAddressHash").innerHTML = 'Ask ' + desc + ' to pay base to this wallet address:<br>' + msg +
+                                '<br>The payment will appear in your balance when complete.';
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+                            alert('Could not get wallet hash. Is your local base node running?');
+                        }
+                    });
+                });
+            }
+        }
+
+        function exportKeys() {
+            document.getElementById("keydump").innerHTML = 'keys = ' + JSON.stringify(keys);
+
+        }
+        
+    </script>
+
+</body>
+</html>
