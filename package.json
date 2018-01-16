@@ -1,7 +1,7 @@
 {
   "name": "basechain",
   "version": "0.0.6",
-  "description": "",
+  "description": "base cryptocurrency",
   "scripts": {
     "start": "node base.js"
   },
@@ -16,5 +16,29 @@
   },
   "engines": {
     "node": ">=4.3.2"
-  }
+  },
+  "main": "base.js",
+  "files": [
+    "base.js",
+    "index.html",
+    "index.css",
+    "version.txt",
+    "logo.svg",
+    "repeater.min.js",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/basecrypto/base.git"
+  },
+  "keywords": [
+    "base",
+    "cryptocurrency"
+  ],
+  "author": "nickfallon",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/basecrypto/base/issues"
+  },
+  "homepage": "https://github.com/basecrypto/base#readme"
 }
