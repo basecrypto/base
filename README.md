@@ -1,11 +1,12 @@
 
 <p align="center">
 
-![basechain.io](https://raw.githubusercontent.com/basecrypto/base/master/logo.png "base crypto")
+  <img width="377" height="447" src="https://raw.githubusercontent.com/basecrypto/base/master/logo.png">
+
+</p>
 
 # base cyrptocurrency
 
-</p>
 
 [![npm version](https://badge.fury.io/js/basechain.svg)](https://badge.fury.io/js/basechain)
 
