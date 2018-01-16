@@ -14,7 +14,7 @@ official site: [basechain.io](http://basechain.io)
 
 base is a node-based blockchain and transaction processor. This implementation provides a full node, miner and wallet.
 
-##How to install and run
+## How to install and run
 
 1. Download this package as a ZIP using the green 'Clone or download' button above
 
