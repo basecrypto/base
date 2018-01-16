@@ -191,7 +191,7 @@ else {
 var getVersion = () => {
     var options = {
         host: 'raw.githubusercontent.com',
-        path: '/nickfallon/base/master/version.txt'
+        path: '/basecrypto/base/master/version.txt'
     }
     var request = http.request(options, function (res) {
         var data = '';
