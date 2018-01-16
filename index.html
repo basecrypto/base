@@ -96,7 +96,7 @@
     <div id="peersPanel" style="display: none">
         <h2>Peers</h2>
         <input type="text" id="peerIP" value="ws://base-crypto.herokuapp.com" />
-        <button onclick="connect()" id="connect">Add Peer</button>
+        <button onclick="connect($('#peerIP').val())" id="connect">Add Peer</button>
         <h2>Connections</h2>
         <div id="peers">
             <div>
@@ -184,11 +184,17 @@
                 //var obj = JSON.parse(data);
                 repeaterPeers.jsonarray = data;
                 repeaterPeers.render(Repeater.array);
+
+                //no peers? auto-connect to heroku
+                if (data.length == 0) {
+                    console.log('connecting to network..');
+                    connect('ws://base-crypto.herokuapp.com');
+                }
             });
         }
 
-        function connect() {
-            var peerIP = $('#peerIP').val();
+        function connect(peerIP) {
+            //var peerIP = $('#peerIP').val();
             $.ajax({
                 method: "POST",
                 contentType: "application/json; charset=utf-8",
@@ -196,8 +202,6 @@
                 data: JSON.stringify({ "peer": peerIP }),
                 success: function (msg) {
                     //connected                                       
-                    getPeers();
-
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
                     if (XMLHttpRequest.readyState == 4) {

@@ -5,10 +5,12 @@
 
 </p>
 
-# base cyrptocurrency
+# base cryptocurrency
 
 
 [![npm version](https://badge.fury.io/js/basechain.svg)](https://badge.fury.io/js/basechain)
 
-[official website](http://basechain.io)
+official site: [basechain.io](http://basechain.io)
+
+base is a node-based blockchain and transaction processor. This implementation provides a full node, miner and wallet.
 
