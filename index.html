@@ -35,7 +35,9 @@
 
     <div id="keysPanel" style="display:none">
         <h2>Keys</h2>
-        <div id="keydump"></div>
+        <div>These are your keys - keep them safe! They are in localStorage so a cookie or browser cache reset will lose your base tokens forever. Copy and paste your keys somewhere safe. New keys are added when you send and receive so backup regularly!</div>
+        <br />
+        <textarea rows="10"  id="keydump"></textarea>
         <br /><br />
         <button onclick="exportKeys()" id="exportKeys">Refresh keys</button>
         <br /><br />
@@ -81,7 +83,7 @@
         </div>
         <input type="text" id="maxSeconds" value="20" placeholder="seconds" /> seconds before retry <br />
         <br />
-        <div>pay reward to PK</div>
+        <div>pay reward to your wallet mining PK (don't change this)</div>
         <input type="text" id="minerPK" value="" placeholder="base wallet address PK" />
         <br /><br />
         <button onclick="$('#mineBlockButton').hide();  mineBlock();  g_stop_mining = false; " id="mineBlockButton">Start mining</button> 
@@ -95,6 +97,12 @@
 
     <div id="peersPanel" style="display: none">
         <h2>Peers</h2>
+        <div>You are automatically connected to the network when you load this page, and you can see who you are connected to by pressing 'Refresh Peers' below. If you are disconnected due to a timeout, click Refresh from the menu. 
+        <br />
+        <br />
+        To connect to other peers directly, ask for their IP address and use the following format to connect:  ws://1.2.3.4:6001 , but replace 1.2.3.4 with their IP. The :6001 is the port. You may need to set port-forwarding on your router to allow connections on 6001.</div>
+        <br />
+        
         <input type="text" id="peerIP" value="ws://base-crypto.herokuapp.com" />
         <button onclick="connect($('#peerIP').val())" id="connect">Add Peer</button>
         <h2>Connections</h2>
