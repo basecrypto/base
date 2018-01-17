@@ -12,7 +12,11 @@
 
 official site: [basechain.io](http://basechain.io)
 
-base is a node-based blockchain and transaction processor. This implementation provides a full node, miner and wallet.
+source: [github.com/basecrypto/base](httphttps://github.com/basecrypto/base)
+
+
+
+base is a blockchain and transaction processor. This implementation includes a full node, miner and wallet.
 
 ## How to install and run
 
@@ -31,4 +35,6 @@ npm start
 
 ```
 
-5. Your local base peer should now be running. Open index.html in any browser
+5. Your local base peer should now be running. 
+
+6. Open index.html in any browser to see your base wallet, send and receive base, mine base, connect to other peers and peek transactions on the network.
