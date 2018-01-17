@@ -313,7 +313,7 @@
                         //could not mine block
                         console.log(err.toString());
                         setTimeout('mineBlock();', 2000); 
-                        $('#mined').text('failed to mine');
+                        $('#mined').text('recomputing block..');
                         return;
                     }
                     //$('#minedlog').text(msg + '\n' + txt);                

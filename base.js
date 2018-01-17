@@ -1,7 +1,7 @@
 
 'use strict';
 
-var version = '0.0.10';
+var version = '0.0.11';
 
 console.log("base v" + version);
 console.log("official site: basechain.io ");
@@ -381,6 +381,11 @@ var initErrorHandler = (ws) => {
     var closeConnection = (ws) => {
         console.log('connection failed to peer: ' + ws.url);
         sockets.splice(sockets.indexOf(ws), 1);
+
+        //attempt to re-connect
+        console.log('re-connect to heroku..');
+        connectToPeers(['ws://base-crypto.herokuapp.com']);
+
     };
     ws.on('close', () => closeConnection(ws));
     ws.on('error', () => closeConnection(ws));
