@@ -1,6 +1,6 @@
 {
   "name": "basechain",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "base cryptocurrency",
   "scripts": {
     "start": "node base.js"
@@ -36,7 +36,6 @@
     "cryptocurrency"
   ],
   "author": "nickfallon",
-  "license": "ISC",
   "bugs": {
     "url": "https://github.com/basecrypto/base/issues"
   },

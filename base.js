@@ -1,7 +1,7 @@
 
 'use strict';
 
-var version = '0.0.8';
+var version = '0.0.9';
 
 console.log("base v" + version);
 console.log("official site: basechain.io ");
@@ -18,12 +18,6 @@ var fs = require("fs");
 var http = require('https');
 //heroku postgres
 var pg = require('pg');
-
-
-var coinbase_pk = '040c7d8349881aaef92609adb2a5c16ec52a820ae67329fb2f892835a1e40b6dad34871afcd7138dd467e46acef725409f0e68e48a55edc10410e68a264f0a2752';
-var genesis_coinbase_hash = CryptoJS.SHA256(coinbase_pk).toString();
-console.log('genesis_coinbase_hash ' + genesis_coinbase_hash);
-
 
 var http_port = process.env.HTTP_PORT || 3001;
 var p2p_port = process.env.PORT || 6001;
@@ -109,7 +103,10 @@ var calculateHash = (index, previousHash, timestamp, nonce, data, difficulty_a, 
 
 var getGenesisBlock = () => {
     var inputs = [];
-    var outputs = [new Output(genesis_coinbase_hash, 200000000)];
+    //var coinbase_pk = '';
+    //var genesis_coinbase_hash = CryptoJS.SHA256(coinbase_pk).toString();
+    var genesis_coinbase_hash = 'f0c8b63451ee734fe4d7bb5c7dedd71a8a826f1b599fe50074c490456957f572';
+    var outputs = [new Output(genesis_coinbase_hash, 2000000)];
     var secret_keys = [];
     var genesis_timestamp = 1465154705;
     var genesis_coinbase_tx = JSON.stringify(makeTransaction(genesis_timestamp, inputs, outputs, secret_keys));
@@ -119,11 +116,11 @@ var getGenesisBlock = () => {
         genesis_timestamp,
         [genesis_coinbase_tx],
         0,
-        "f5ac3341830017200e1f10dffadf5885f9c30079b2e83a579419536752192404",
+        "9408ca0a0763cab86ea5f09766290bd2cbdbe75610b44b104b91b2b0279625ad",
         1,
         0xF
     );
-    //console.log('genesis hash: ' + calculateHashForBlock(block));
+    console.log('genesis hash: ' + calculateHashForBlock(block));
     return block;
 };
 
