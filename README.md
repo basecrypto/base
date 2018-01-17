@@ -16,7 +16,7 @@ base is a node-based blockchain and transaction processor. This implementation p
 
 ## How to install and run
 
-1. Download this package as a ZIP using the green 'Clone or download' button above
+1. Download this package as a ZIP using the green 'Clone or download' button at [github.com/basecrypto/base](https://github.com/basecrypto/base) 
 
 2. Make sure you have [Node and NPM](https://nodejs.org/en/) installed
 
