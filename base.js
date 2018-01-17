@@ -1,7 +1,7 @@
 
 'use strict';
 
-var version = '0.0.9';
+var version = '0.0.10';
 
 console.log("base v" + version);
 console.log("official site: basechain.io ");
@@ -829,6 +829,8 @@ var isValidTransaction = (somechain, transaction, isCoinbase, total_expected_fee
             if (!tx) {
                 console.log('ERROR: could not find parent tx of input');
                 console.log('input.fromTxHash  ' + input.fromTxHash);
+                console.log('fromBlock  ' + JSON.stringify(fromBlock));
+                console.log('input  ' + JSON.stringify(input));
                 return false;
             }
             //find the output in the parent tx, specified by this input
@@ -1104,7 +1106,13 @@ var getTransactionInBlock = (fromBlock, txHash) => {
     var data = fromBlock.data;
     var len = data.length;
     for (var i = 0; i < len; i++) {
-        var transaction = data[i];
+        var transaction;
+        if (typeof data[i] === 'string' || data[i] instanceof String) {            
+            transaction = JSON.parse(data[i]);
+        }
+        else {
+            transaction = data[i];
+        }        
         if (txHash == transaction.hash) {
             //found transaction
             return (transaction);
@@ -1112,6 +1120,7 @@ var getTransactionInBlock = (fromBlock, txHash) => {
     }
     if (!obj) {
         console.log('ERROR: getTransactionInBlock() could not find output.');
+        console.log('fromBlock = ' + JSON.stringify(fromBlock));
         console.log('txHash = ' + txHash);
     }
     return obj;
