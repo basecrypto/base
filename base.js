@@ -1,7 +1,7 @@
 
 'use strict';
 
-var version = '0.0.12';
+var version = '0.0.13';
 
 console.log("base v" + version);
 console.log("official site: basechain.io ");
@@ -118,7 +118,7 @@ var getGenesisBlock = () => {
         0,
         "9408ca0a0763cab86ea5f09766290bd2cbdbe75610b44b104b91b2b0279625ad",
         1,
-        0x0
+        0xf
     );
     console.log('genesis hash: ' + calculateHashForBlock(block));
     return block;
@@ -422,7 +422,7 @@ var generateNextBlock = (transactions, miner_pk, max_time_s) => {
         difficulty = getDifficulty(blockchain, blockchain[blockchain.length - 1], blockchain[blockchain.length - 2]);
     }
     else {
-        difficulty = [1, 0x0];
+        difficulty = [1, 0xf];
     }    
     while (!isValidHashDifficulty(nextHash, difficulty)) {        
         now = getTimestamp();
@@ -452,7 +452,7 @@ var isValidHashDifficulty = (hash, difficulty) => {
     if (isNaN(digit_dec)) {
         digit_dec = 15;
     }
-    if (digit_dec < difficulty[1]) {
+    if (digit_dec > difficulty[1]) {
         return false;
     }
     return true;
@@ -464,16 +464,16 @@ var getDifficulty = (somechain, newblock, previousblock) => {
     var difficulty_b = newblock.difficulty_b;
     var time = newblock.timestamp - previousblock.timestamp;
     if (time < 60 * 10) {
-        difficulty_b = difficulty_b + 1;
-        if (difficulty_b > 15) {
-            difficulty_b = 0;
+        difficulty_b = difficulty_b - 1;
+        if (difficulty_b < 0) {
+            difficulty_b = 15;
             difficulty_a = difficulty_a + 1;
         }
     }
     if (time > 60 * 10) {
-        difficulty_b = difficulty_b - 1;
-        if (difficulty_b < 0) {
-            difficulty_b = 15;
+        difficulty_b = difficulty_b + 1;
+        if (difficulty_b > 15) {
+            difficulty_b = 0;
             difficulty_a = difficulty_a - 1;
         }
     }
@@ -560,7 +560,7 @@ var addTransaction = (newTransaction) => {
 };
 
 var isValidNewBlock = (somechain, newBlock, previousBlock, prevBlock2) => {    
-    var difficulty =  [1, 0x0];
+    var difficulty =  [1, 0xf];
     if (prevBlock2) {
         difficulty = getDifficulty(somechain, previousBlock, prevBlock2);
     }
