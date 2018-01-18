@@ -1,7 +1,7 @@
 
 'use strict';
 
-var version = '0.0.11';
+var version = '0.0.12';
 
 console.log("base v" + version);
 console.log("official site: basechain.io ");
@@ -118,7 +118,7 @@ var getGenesisBlock = () => {
         0,
         "9408ca0a0763cab86ea5f09766290bd2cbdbe75610b44b104b91b2b0279625ad",
         1,
-        0xF
+        0x0
     );
     console.log('genesis hash: ' + calculateHashForBlock(block));
     return block;
@@ -422,9 +422,9 @@ var generateNextBlock = (transactions, miner_pk, max_time_s) => {
         difficulty = getDifficulty(blockchain, blockchain[blockchain.length - 1], blockchain[blockchain.length - 2]);
     }
     else {
-        difficulty = [1, 0xf];
+        difficulty = [1, 0x0];
     }    
-    while (!isValidHashDifficulty(nextHash, difficulty)) {
+    while (!isValidHashDifficulty(nextHash, difficulty)) {        
         now = getTimestamp();
         if ((now - t) > max_time_s) {
             //ran out of time
@@ -452,7 +452,7 @@ var isValidHashDifficulty = (hash, difficulty) => {
     if (isNaN(digit_dec)) {
         digit_dec = 15;
     }
-    if (digit_dec > difficulty[1]) {
+    if (digit_dec < difficulty[1]) {
         return false;
     }
     return true;
@@ -560,7 +560,7 @@ var addTransaction = (newTransaction) => {
 };
 
 var isValidNewBlock = (somechain, newBlock, previousBlock, prevBlock2) => {    
-    var difficulty =  [1, 0xf];
+    var difficulty =  [1, 0x0];
     if (prevBlock2) {
         difficulty = getDifficulty(somechain, previousBlock, prevBlock2);
     }

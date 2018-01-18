@@ -1,6 +1,6 @@
 {
   "name": "basechain",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "base cryptocurrency",
   "scripts": {
     "start": "node base.js"
