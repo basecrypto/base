@@ -38,3 +38,5 @@ npm start
 5. Your local base peer should now be running. 
 
 6. Open index.html in any browser to see your base wallet, send and receive base, mine base, connect to other peers and peek transactions on the network.
+
+

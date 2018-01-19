@@ -1,7 +1,7 @@
 
 'use strict';
 
-var version = '0.0.13';
+var version = '0.0.14';
 
 console.log("base v" + version);
 console.log("official site: basechain.io ");
@@ -576,7 +576,14 @@ var isValidNewBlock = (somechain, newBlock, previousBlock, prevBlock2) => {
     } else if (calculateHashForBlock(newBlock) !== newBlock.hash) {
         console.log('invalid hash: ' + calculateHashForBlock(newBlock) + ' newBlock.hash:' + newBlock.hash);
         return false;
+    } else if (previousBlock.timestamp >= newBlock.timestamp) {
+        console.log('invalid timestamp - must be after prevblock');
+        return false;        
+    } else if (newBlock.timestamp > getTimestamp()) {
+        console.log('invalid timestamp - must be in the past');
+        return false;
     }
+
     //must be array
     if (!Array.isArray(newBlock.data)) {
         console.log('invalid array');
