@@ -2,118 +2,148 @@
 <head>
     <title>basechain.io</title>
     <script src="repeater.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.2.1.min.js"
-            integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
-            crossorigin="anonymous"></script>
+    <script src="jquery-3.2.1.min.js"></script>
     <link rel="stylesheet" type="text/css" href="index.css" />
-    <link href="https://fonts.googleapis.com/css?family=Quantico" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600" rel="stylesheet">
 </head>
 <body>
-    <a class="menuitem" onclick="getBalance(); getTransactions(); getPeers(); " id="getBalance">Refresh</a>
-    <a class="menuitem" onclick="clearPanels();$('#makePaymentPanel').show()">Send</a>
-    <a class="menuitem" onclick="clearPanels();$('#receivePanel').show()">Receive</a>
-    <a class="menuitem" onclick="clearPanels();$('#minerPanel').show();">Miner</a>
-    <a class="menuitem" onclick="clearPanels();$('#keysPanel').show()">Keys</a>
-    <a class="menuitem" onclick="clearPanels();$('#transactionsPanel').show()">Transactions</a>
-    <a class="menuitem" onclick="clearPanels();$('#peersPanel').show();">Peers</a>
 
-    <script>
-        function clearPanels() {
-            $('#makePaymentPanel').hide();
-            $('#receivePanel').hide();
-            $('#transactionsPanel').hide();
-            $('#minerPanel').hide();
-            $('#peersPanel').hide();
-            $('#keysPanel').hide();
-        }
-    </script>
+    <div id="container">
+        <div id="menu-header">
+            <a class="menuitem" onclick="getBalance(); getTransactions(); getPeers(); " id="getBalance">Refresh</a>
+            <a class="menuitem" onclick="clearPanels();$('#makePaymentPanel').show()">Send</a>
+            <a class="menuitem" onclick="clearPanels();$('#receivePanel').show()">Receive</a>
+            <a class="menuitem" onclick="clearPanels();$('#minerPanel').show();">Miner</a>
+            <a class="menuitem" onclick="clearPanels();$('#keysPanel').show()">Keys</a>
+            <a class="menuitem" onclick="clearPanels();$('#transactionsPanel').show()">Transactions</a>
+            <a class="menuitem" onclick="clearPanels();$('#peersPanel').show();">Peers</a>
+        </div>
 
-    <h2>Balance</h2>
-    <img id="logo" src="logo.svg" style="width:80px;float:left" />
-    <div id="balance">not retrieved</div>
-    <br />
+        <script>
+            function clearPanels() {
+                $('#welcomePanel').hide();
+                $('#makePaymentPanel').hide();
+                $('#receivePanel').hide();
+                $('#transactionsPanel').hide();
+                $('#minerPanel').hide();
+                $('#peersPanel').hide();
+                $('#keysPanel').hide();
+            }
+        </script>
 
-    <div id="keysPanel" style="display:none">
-        <h2>Keys</h2>
-        <div>These are your keys - keep them safe! They are in localStorage so a cookie or browser cache reset will lose your base tokens forever. Copy and paste your keys somewhere safe. New keys are added when you send and receive so backup regularly!</div>
-        <br />
-        <textarea rows="10"  id="keydump"></textarea>
-        <br /><br />
-        <button onclick="exportKeys()" id="exportKeys">Refresh keys</button>
-        <br /><br />
-    </div>
-
-    <div id="makePaymentPanel" style="display: none">
-        <h2>Send base</h2>
-        <div>Pay </div><input type="text" id="payAmount" placeholder="amount" />
-        <br /><br />
-        <div> to address hash </div><input type="text" id="payToAddressHash" value="" placeholder="destination address hash" />
-        <br /><br />
-        <div>Mining fee </div><input type="text" id="fee" placeholder="fee" value="0.0000001" />
-        <br /><br />
-        <button onclick="makePayment()" id="makePayment">Make Payment</button>
-    </div>
-
-    <div id="receivePanel" style="display: none">
-        <h2>Receive base</h2>
-        <button onclick="receiveBase()" id="receiveBase">Get a new wallet address</button>
-        <br />
-        <br />
-        <div id="receiveToAddressHash"></div>
-    </div>
-
-    <div id="transactionsPanel" style="display: none">
-        <h2>Transactions</h2>
-        <div id="transactions">
-            <div>hash: {hash}</div>
-            <div>timestamp:{timestamp}</div>
-            <div>inputs: {inputs}</div>
-            <div>outputs: {outputs}</div>
-            <div>signatures: {signatures}</div>
+        <h2>Balance</h2>
+     
+        <div id="balance">
+            <div id="bal0"><img id="logo" src="logo.svg" style="width:80px;" /></div>
+            <div id="bal1">Not retrieved</div>
+            <div id="bal2"></div>
         </div>
         <br />
-        <br />
-        <button onclick="getTransactions()" id="refreshTransactions">Refresh transaction list</button>
-    </div>
 
-    <div id="minerPanel" style="display: none">
-        <h2>Miner</h2>
-        <div>
-            Mine for maximum
-        </div>
-        <input type="text" id="maxSeconds" value="20" placeholder="seconds" /> seconds before retry <br />
-        <br />
-        <div>pay reward to your wallet mining PK (don't change this)</div>
-        <input type="text" id="minerPK" value="" placeholder="base wallet address PK" />
-        <br /><br />
-        <button onclick="$('#mineBlockButton').hide();  mineBlock();  g_stop_mining = false; " id="mineBlockButton">Start mining</button> 
-        <button onclick="$('#mineBlockButton').show();  stopMining()" id="stopMiningButton" >Pause mining</button>
-        <br />
-        <br />
-        <div style="font-size:30px;" id="mined">not mining</div>
-        <br />
-        <div style="font-size:20px;" id="minedlog"></div>
-    </div>
+        <div id="welcomePanel">
+            <h2>Announcments</h2>
 
-    <div id="peersPanel" style="display: none">
-        <h2>Peers</h2>
-        <div>You are automatically connected to the network when you load this page, and you can see who you are connected to by pressing 'Refresh Peers' below. If you are disconnected due to a timeout, click Refresh from the menu. 
-        <br />
-        <br />
-        To connect to other peers directly, ask for their IP address and use the following format to connect:  ws://1.2.3.4:6001 , but replace 1.2.3.4 with their IP. The :6001 is the port. You may need to set port-forwarding on your router to allow connections on 6001.</div>
-        <br />
-        
-        <input type="text" id="peerIP" value="ws://base-crypto.herokuapp.com" />
-        <button onclick="connect($('#peerIP').val())" id="connect">Add Peer</button>
-        <h2>Connections</h2>
-        <div id="peers">
+            21 January 2018<br /><br />
             <div>
-                Connection to {i}
+                Due to increased demand, the base network is currently under extreme load 
+                which may cause mined blocks not to propagate correctly, leading to stale blocks. <br />
+                We are working to resolve this as soon as possible and improve stability.                
+                Thanks for your support and patience while we work out these growing pains.<br />
+                <br />
+                Regards,<br />
+                base development team
             </div>
         </div>
-        <br />
-        <br />
-        <button onclick="getPeers(); " id="refreshPeers">Refresh peers</button>
+
+        <div id="keysPanel" style="display:none">
+            <h2>Keys</h2>
+            <div>These are your base wallet keys - keep them secret and safe! They are in localStorage so a cookie or browser cache reset will lose your base tokens forever.                 
+                Copy and paste your keys somewhere safe. New keys are added when you send and receive so backup regularly. 
+                <br />
+                <br />
+                To re-import your keys into another browser session, open the devloper console and paste the keys directly into the console and press Enter.</div>
+            <br />
+            <textarea rows="10" id="keydump"></textarea>
+            <br /><br />
+            <button onclick="exportKeys()" id="exportKeys">Refresh keys</button>
+            <br /><br />
+        </div>
+
+        <div id="makePaymentPanel" style="display: none">
+            <h2>Send base</h2>
+            <div>Pay </div><input type="text" id="payAmount" placeholder="amount" />
+            <br /><br />
+            <div> to address hash </div><input type="text" id="payToAddressHash" value="" placeholder="destination address hash" />
+            <br /><br />
+            <div>Mining fee </div><input type="text" id="fee" placeholder="fee" value="0.0000001" />
+            <br /><br />
+            <button onclick="makePayment()" id="makePayment">Make Payment</button>
+        </div>
+
+        <div id="receivePanel" style="display: none">
+            <h2>Receive base</h2>
+            <button onclick="receiveBase()" id="receiveBase">Get a new wallet address</button>
+            <br />
+            <br />
+            <div id="receiveToAddressHash"></div>
+        </div>
+
+        <div id="transactionsPanel" style="display: none">
+            <h2>Transactions</h2>
+            <div id="transactions">
+                <div>hash: {hash}</div>
+                <div>timestamp:{timestamp}</div>
+                <div>inputs: {inputs}</div>
+                <div>outputs: {outputs}</div>
+                <div>signatures: {signatures}</div>
+            </div>
+            <br />
+            <br />
+            <button onclick="getTransactions()" id="refreshTransactions">Refresh transaction list</button>
+        </div>
+
+        <div id="minerPanel" style="display: none">
+            <h2>Miner</h2>
+            <div>
+                Mine for maximum
+            </div>
+            <input type="text" id="maxSeconds" value="20" placeholder="seconds" /> seconds before retry <br />
+            <br />
+            <div>pay reward to your wallet mining PK (don't change this)</div>
+            <input type="text" id="minerPK" value="" placeholder="base wallet address PK" />
+            <br /><br />
+            <button onclick="$('#mineBlockButton').hide();  mineBlock();  g_stop_mining = false; " id="mineBlockButton">Start mining</button>
+            <button onclick="$('#mineBlockButton').show();  stopMining()" id="stopMiningButton">Pause mining</button>
+            <br />
+            <br />
+            <div style="font-size:30px;" id="mined">not mining</div>
+            <br />
+            <div style="font-size:20px;" id="minedlog"></div>
+        </div>
+
+        <div id="peersPanel" style="display: none">
+            <h2>Peers</h2>
+            <div>
+                You are automatically connected to the network when you load this page, and you can see who you are connected to by pressing 'Refresh Peers' below. If you are disconnected due to a timeout, click Refresh from the menu.
+                <br />
+                <br />
+                To connect to other peers directly, ask for their IP address and use the following format to connect:  ws://1.2.3.4:6001 , but replace 1.2.3.4 with their IP. The :6001 is the port. You may need to set port-forwarding on your router to allow connections on 6001.
+            </div>
+            <br />
+
+            <input type="text" id="peerIP" value="ws://base-crypto.herokuapp.com" />
+            <button onclick="connect($('#peerIP').val())" id="connect">Add Peer</button>
+            <h2>Connections</h2>
+            <div id="peers">
+                <div>
+                    Connection to {i}
+                </div>
+            </div>
+            <br />
+            <br />
+            <button onclick="getPeers(); " id="refreshPeers">Refresh peers</button>
+        </div>
+
     </div>
 
     <script>
@@ -140,37 +170,7 @@
 
         var repeaterPeers = new Repeater("peers", []);
         repeaterPeers.render(Repeater.array);
-
-        /*
-        //call animation loop
-        window.requestAnimFrame = (function () {
-            return window.requestAnimationFrame ||
-                window.webkitRequestAnimationFrame ||
-                window.mozRequestAnimationFrame ||
-                function (callback) {
-                    window.setTimeout(callback, 33); //fallback
-                };
-        })();
-
-        //start the loop
-        (function animloop() {
-            requestAnimFrame(animloop);
-            theloop();
-        })();
-      
-
-        var tick = 0;
-        //loop
-        function theloop() {
-            tick++;
-            if (tick > 60 * 5) {
-                tick = 0;
-                console.log('update fields');
-                getTransactions();
-                getBalance();
-            }
-        }
-          */
+        
 
         function getTransactions() {
             $.get("http://localhost:3001/transactions", function (data) {
@@ -180,8 +180,7 @@
                 repeaterTransactions.render(Repeater.stringify);
             });
         }
-
-
+        
         getTransactions();
         getBalance();
         getPeers();
@@ -259,7 +258,12 @@
                             temp_balance = temp_balance + parseFloat(output.amount);
                         }
                         balance = temp_balance;
-                        $('#balance').text(balance.toFixed(8));
+
+                        var int = Math.floor(balance);
+                        var dec = balance % 1;
+                        $('#bal1').text(int);
+                        $('#bal2').text(dec.toFixed(8).replace('0.', '.'));
+
                     },
                     error: function (XMLHttpRequest, textStatus, errorThrown) {
                         if (XMLHttpRequest.readyState == 4) {
@@ -489,10 +493,11 @@
         }
 
         function exportKeys() {
-            document.getElementById("keydump").innerHTML = 'keys = ' + JSON.stringify(keys);
-
+            document.getElementById("keydump").innerHTML = 'keys = ' + JSON.stringify(keys) + '; saveKeys(); ';
         }
-        
+        function saveKeys() {
+            localStorage.setItem("keys", JSON.stringify(keys));
+        }
     </script>
 
 </body>

@@ -1,59 +1,87 @@
 
 body {
-    font-family: 'Quantico', sans-serif;
-    background: -webkit-linear-gradient(#071c57, #3762dc);
+    font-family: 'Open Sans', sans-serif;
+    background: -webkit-linear-gradient(#232527, #303336);
     color: #d6d6ee;
     padding: 20px 20px;
 }
 
-input[type='text'] {
-    margin: 10px 0px;
-    padding:20px 20px;
-    width: 100%;
-    border-radius: 3px;
-    border: solid 1px #fff;
-    background-color: #ced1db;
-    font-size: 20px;
-    font-weight: 100;
+.menu-header {
+    background-color: #383d43;
 }
 
-button {
+input[type='text'] {
+    margin: 10px 0px;
     padding: 20px 20px;
-    margin-right:30px;
-    border-radius: 3px;
-    border: solid 1px #fff;
-    background-color: #193ea6;
+    width: 100%;
+    border-radius: 5px;
+    border: solid 1.2px #6d7378;
+    background-color: #232527;
     font-size: 20px;
     font-weight: 100;
     color: #fff;
     transition: all 0.2s;
 }
+
+    input[type='text']:focus {
+        outline-color: #a1a6aa;
+        transition: all 0.2s;
+    }
+
+button:focus {
+    outline-color: none;
+}
+
+
+button {
+    padding: 20px 20px;
+    margin-right: 30px;
+    border-radius: 5px;
+    border: solid 2px #ff7f00;
+    font-size: 20px;
+    font-weight: 100;
+    color: #fff;
+    transition: all 0.2s;
+    background: #363028;
+}
     button:hover {
         cursor: pointer;
-        background-color: #c0cffa;
+        background-color: #ff7f00;
         color: #000;
         transition: all 0.2s;
     }
- 
-
 
 a:hover {
     cursor: pointer;
 }
 
 #balance {
-    font-size: 55px;
+    font-weight: 100;
+    overflow: hidden;    
 }
-
+#bal0 {
+    float: left;
+}
+#bal1 {
+    color: #fff;
+    font-size: 55px;
+    float: left;
+}
+#bal2 {
+    color: #aaa;
+    font-size: 50px;
+    float: left;
+}
 
 #keydump {
     padding: 20px 20px;
-    width:100%;
+    width: 100%;
     border-radius: 3px;
-    border: solid 1px #fff;
-    background-color: #ced1db;
+    border: solid 1.2px #6d7378;
+    background-color: #232527;
     font-weight: 100;
     font-size: 9px;
+    color: #fff;
 }
 
 .menuitem {
@@ -68,21 +96,9 @@ h2 {
     margin: 20px 0px 20px 0px;
 }
 
-#balance {
-    font-size: 72px;
-    background: -webkit-linear-gradient(#ffffff, #a0a0d0);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    
-}
 
 #logo {
     height: 60px;
     float: left;
-    padding-top: 20px;
-}
-
-#keydump {
-    color: #000;
-    padding:10px;
+    padding-top: 10px;
 }
