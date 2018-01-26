@@ -215,7 +215,7 @@ var savePeers = (data) => {
         try {
             var peers_to_save = JSON.parse(data);
             var len = peers_to_save.length;
-            var sql = "INSERT INTO Peers (Address, DateStamp) VALUES ";
+            var sql = 'INSERT INTO "Peers" (Address, DateStamp) VALUES ';
             for (var i = 0; i < len; i++) {
                 sql = sql + " ('" + peers_to_save[i] + "', '" + getTimestamp() + "')";
                 if (i < (len - 1)) {
@@ -269,7 +269,7 @@ else {
     //load the peers from heroku postgresDB  
     pg.connect(process.env.DATABASE_URL, function (err, client, done) {
         try {
-            client.query('SELECT Address, DateStamp FROM Peers', function (err, result) {
+            client.query('SELECT "Address", "DateStamp" FROM "Peers" ', function (err, result) {
                 if (err) {
                     console.log('ERROR: failed to load peers from postgres database(2). ');
                     console.error(err);
@@ -750,7 +750,7 @@ var connectToPeers = (newPeers) => {
             });
             ws.on('error', (err) => {
                 console.log('connection failed');
-                console.log(err);
+                //console.log(err);
             });
         }
         catch (err) {
