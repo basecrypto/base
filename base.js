@@ -228,7 +228,8 @@ var savePeers = (data) => {
             pg.connect(process.env.DATABASE_URL, function (err, client, done) {
                 client.query(sql, function (err, result) {
                     if (err) {
-                        console.error(err); response.send("Error saving peers to db " + err);
+                        console.error(err);
+                        console.log("Error saving peers to db " + err);
                     }
                     else {
                         console.log('saved peers to db. data=' + data);
