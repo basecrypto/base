@@ -21,10 +21,10 @@ var pg = require('pg');
 
 var http_port = process.env.HTTP_PORT || 3001;
 var p2p_port = process.env.PORT || 6001;
-var initialPeers = process.env.PEERS ? process.env.PEERS.split(',') : [];
 var storage = process.env.STORAGE || 'FILE';
 var sockets = [];
 
+var peers = [];
 var transactions = [];
 var blockchain = [];
 
@@ -124,8 +124,9 @@ var getGenesisBlock = () => {
     return block;
 };
 
-var saveChain = (data) => {
+//save chain 
 
+var saveChain = (data) => {
     if (storage == 'FILE') {
         //save chain to local disk
         fs.writeFile('blockchain.txt', data, function (error) {
@@ -152,6 +153,8 @@ var saveChain = (data) => {
         });
     }
 }
+
+//load chain 
 
 if (storage == 'FILE') {
     try {
@@ -185,6 +188,105 @@ else {
             }
         });
     });
+}
+
+
+
+
+
+//save peers 
+
+var savePeers = (data) => {
+    console.log('save peer: ' + data);
+    if (storage == 'FILE') {
+        //save peers to local disk
+        fs.writeFile('peers.txt', data, function (error) {
+            if (error) {
+                console.error("ERROR: base could not create a new peer data file: " + error.message);
+                return;
+            }
+            else {
+                console.log('saved peer file');
+            }
+        });
+    }
+    else {
+        //save peers to heroku/postgres
+        try {
+            var peers_to_save = JSON.parse(data);
+            var len = peers_to_save.length;
+            var sql = "INSERT INTO Peers (Address, DateStamp) VALUES ";
+            for (var i = 0; i < len; i++) {
+                sql = sql + " ('" + peers_to_save[i] + "', '" + getTimestamp() + "')";
+                if (i < (len - 1)) {
+                    sql = sql + ", ";
+                }
+            }
+            sql = sql + " ON CONFLICT (id) DO UPDATE SET DateStamp = excluded.DateStamp;";
+            console.log(sql);
+            //upsert the data
+            pg.connect(process.env.DATABASE_URL, function (err, client, done) {
+                client.query(sql, function (err, result) {
+                    if (err) {
+                        console.error(err); response.send("Error saving peers to db " + err);
+                    }
+                    else {
+                        console.log('saved peers to db. data=' + data);
+                    }
+                });
+            });
+            console.log('updated peers');
+        }
+        catch (err) {
+            console.log('ERROR: savePeers');
+            console.log(err);
+        }
+    }
+}
+
+
+//load peers 
+
+if (storage == 'FILE') {
+    console.log('loading peers from disk');
+    var peer_data;
+    try {
+        //load the peers from local disk 
+        peer_data = fs.readFileSync('peers.txt');
+        peers = JSON.parse(peer_data);     
+        console.log(peers);
+    }
+    catch (err) {
+        console.log('could not load or parse peers from disk: ' + peer_data);
+        //no peer file, so make one and point to heroku
+        peers = ['54.247.80.217:80'];
+        savePeers(JSON.stringify(peers));
+    }
+}
+else {
+
+    //load the peers from heroku postgresDB  
+    pg.connect(process.env.DATABASE_URL, function (err, client, done) {
+        client.query('SELECT Address, DateStamp FROM Peers', function (err, result) {
+            if (err) {
+                console.log('ERROR: failed to load peers from postgres database(2). ');
+                console.error(err);
+                //process.exit();
+            }
+            else {
+                console.log('loading peers from db..');
+                //push peers loaded from db
+                result.rows.forEach(function (row) {
+                    var loadp = row.Address.toString();
+                    console.log('loading peer ' + loadp);
+                    peers.push(loadp);
+                });
+                //console.log('loaded peers from db.');
+                //console.log(peers);
+            }
+        });
+    });
+
 }
 
 var getVersion = () => {
@@ -267,9 +369,7 @@ var initHttpServer = () => {
     });
 
     app.post('/balance', (req, res) => {
-        console.log('POST /balance');
-        var pk = req.body.pk;
-        console.log('pk=' + pk);
+        var pk = req.body.pk;        
         var outputs = getUnspentOutputs(pk);
         res.set("Connection", "close");
         res.send(JSON.stringify(outputs));
@@ -328,32 +428,31 @@ var initP2PServer = () => {
     var server = new WebSocket.Server({ port: p2p_port });
     server.on('connection', ws => initConnection(ws));
     console.log('listening for peers on port ' + p2p_port);
-
 };
 
 var initConnection = (ws) => {
+
+    //push the socket
     sockets.push(ws);
+
     initMessageHandler(ws);
     initErrorHandler(ws);
 
+    //ask for latest block and transactions
     write(ws, queryLatestBlockMsg());
     write(ws, queryAllTransactionsMsg());
 
-    //setInterval(() => {
-    //    console.log('pinging.');
-    //    write(ws, queryLatestBlockMsg());
-    //    console.log('pinging..');
-    //    write(ws, queryAllTransactionsMsg());
-        
-    //}, 1000 * 10);
-
+    //save all open sockets info to file/db    
+    var socketmap = sockets.map(s => '"' + s._socket.remoteAddress.toString() + '"');    
+    console.log('saving peers: ' + '[' + socketmap + ']');
+    savePeers('[' + socketmap + ']');
 
 };
 
 var initMessageHandler = (ws) => {
     ws.on('message', (data) => {
         var message = JSON.parse(data);
-        console.log('Received message' + JSON.stringify(message));
+        //console.log('Received message' + JSON.stringify(message));
         switch (message.type) {
             case MessageType.QUERY_LATEST_BLOCK:
                 write(ws, responseLatestBlockMsg());
@@ -625,8 +724,21 @@ var connectToPeers = (newPeers) => {
         try {
             var ws = new WebSocket(peer);
             ws.on('open', () => {
-                initConnection(ws);
-                console.log('connected to peer ' + peer);
+                //only connect if not already connected
+                var bFound = false;
+                for (var i = 0; i < sockets.length; i++) {
+                    if (sockets[i]._socket.remoteAddress == ws._socket.remoteAddress) {
+                        bFound = true;
+                    }                
+                }                
+                if (!bFound) {
+                    initConnection(ws);
+                    console.log('connected to peer ' + peer);
+                }
+                else {
+                    console.log('already connected to peer ' + peer);
+                }
+                
             });
             ws.on('error', () => {
                 console.log('connection failed');
@@ -660,7 +772,7 @@ var handleBlockchainResponse = (message) => {
             replaceChain(receivedBlocks);
         }
     } else {
-        console.log('received blockchain is not longer than received blockchain. Do nothing');
+        console.log('received blockchain is same');
     }
 };
 
@@ -1192,10 +1304,7 @@ var broadcast = (message) => {
     sockets.forEach(socket => write(socket, message));
 }
 
-
 getVersion();
-
-connectToPeers(initialPeers);
 
 initHttpServer();
 
