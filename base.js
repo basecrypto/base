@@ -215,7 +215,7 @@ var savePeers = (data) => {
         try {
             var peers_to_save = JSON.parse(data);
             var len = peers_to_save.length;
-            var sql = 'INSERT INTO "Peers" (Address, DateStamp) VALUES ';
+            var sql = 'INSERT INTO "Peers" ("Address", "DateStamp") VALUES ';
             for (var i = 0; i < len; i++) {
                 sql = sql + " ('" + peers_to_save[i] + "', '" + getTimestamp() + "')";
                 if (i < (len - 1)) {
