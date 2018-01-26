@@ -267,24 +267,30 @@ else {
 
     //load the peers from heroku postgresDB  
     pg.connect(process.env.DATABASE_URL, function (err, client, done) {
-        client.query('SELECT Address, DateStamp FROM Peers', function (err, result) {
-            if (err) {
-                console.log('ERROR: failed to load peers from postgres database(2). ');
-                console.error(err);
-                //process.exit();
-            }
-            else {
-                console.log('loading peers from db..');
-                //push peers loaded from db
-                result.rows.forEach(function (row) {
-                    var loadp = row.Address.toString();
-                    console.log('loading peer ' + loadp);
-                    peers.push(loadp);
-                });
-                //console.log('loaded peers from db.');
-                //console.log(peers);
-            }
-        });
+        try {
+            client.query('SELECT Address, DateStamp FROM Peers', function (err, result) {
+                if (err) {
+                    console.log('ERROR: failed to load peers from postgres database(2). ');
+                    console.error(err);
+                    //process.exit();
+                }
+                else {
+                    console.log('loading peers from db..');
+                    //push peers loaded from db
+                    result.rows.forEach(function (row) {
+                        var loadp = row.Address.toString();
+                        console.log('loading peer ' + loadp);
+                        peers.push(loadp);
+                    });
+                    //console.log('loaded peers from db.');
+                    //console.log(peers);
+                }
+            });
+        }
+        catch (err) {
+            console.log('WARNING: could not load peers from database');
+            console.log(err);
+        }
     });
 
 }
@@ -721,6 +727,7 @@ var isValidNewBlock = (somechain, newBlock, previousBlock, prevBlock2) => {
 
 var connectToPeers = (newPeers) => {
     newPeers.forEach((peer) => {
+        console.log('connecting to peer ' + peer);
         try {
             var ws = new WebSocket(peer);
             ws.on('open', () => {
@@ -740,8 +747,9 @@ var connectToPeers = (newPeers) => {
                 }
                 
             });
-            ws.on('error', () => {
+            ws.on('error', (err) => {
                 console.log('connection failed');
+                console.log(err);
             });
         }
         catch (err) {
