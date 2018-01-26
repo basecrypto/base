@@ -222,7 +222,7 @@ var savePeers = (data) => {
                     sql = sql + ", ";
                 }
             }
-            sql = sql + " ON CONFLICT (id) DO UPDATE SET DateStamp = excluded.DateStamp;";
+            sql = sql + ' ON CONFLICT ("id") DO UPDATE SET "DateStamp" = excluded."DateStamp";';
             console.log(sql);
             //upsert the data
             pg.connect(process.env.DATABASE_URL, function (err, client, done) {
